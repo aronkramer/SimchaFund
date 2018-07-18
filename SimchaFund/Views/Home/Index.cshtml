@@ -1,31 +1,137 @@
-﻿@{
-    ViewBag.Title = "Home Page";
-}
-
-<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
-</div>
+﻿@using SimchaFund.Data
+@model IEnumerable<Contributors>
 
 <div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-    </div>
+    <input class="input-sm search" placeholder="Search"/>
+    <button class="btn btn-danger clear">Clear</button>
+    <button class="btn btn-lg btn-primary" id="new-contributor">New Contributor</button>
 </div>
+<br />
+<div>
+    <table class="table table-bordered table-hover table-striped">
+        <tr>
+            <th>Deposit</th>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Balance</th>
+            <th>AlwaysInclude</th>
+            <th>Actions</th>
+        </tr>
+        @foreach (Contributors c in Model)
+        {
+            <tr>
+                <td><button class="btn btn-danger deposit-more" data-person-id="@c.Id"
+                       data-person-name="@c.FirstName @c.LastName">Add Cash</button></td>
+                <td>@c.FirstName @c.LastName</td>
+                <td>@c.CellNumber</td>
+                <td>@c.Amount.ToString("C")</td>
+                <td>
+                @if (c.AlwaysInclude)
+                {
+                    <span class="glyphicon glyphicon-ok"></span>
+                }
+                </td>
+                <td>
+                    <button class="btn btn-success Edit" data-id="@c.Id" data-first="@c.FirstName"
+                      data-last="@c.LastName" data-cell="@c.CellNumber" data-alwaysIncluded="@c.AlwaysInclude"
+                       data-date="@c.Date.ToString("yyyy-MM-dd")">Edit</button>
+                    <a href="/home/history?contribid=@c.Id" class="btn btn-info">History</a>
+                </td>
+            </tr>
+        }
+    </table>
+</div>
+
+
+
+<div class="modal fade new-contrib" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title edit-title"></h4>
+            </div>
+            <form method="POST" action="/home/AddContributor" class="change-url">
+                <div class="modal-body">
+
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label>First Name</label>
+                            <input class="form-control" id="firstname" name="FirstName" placeholder="First Name">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Last Name</label>
+                            <input class="form-control" id="lastname" name="LastName" placeholder="Last Name">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label>Cell Number</label>
+                            <input class="form-control" id="phone" name="CellNumber" placeholder="Cell Number">
+                        </div>
+                        <div class="form-group col-md-6" id="initialDepositDiv">
+                            <label>Initial Deposit</label>
+                            <input class="form-control" name="Amount" placeholder="Initial Deposit">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label>Created Date</label>
+                            <input class="form-control" id="dateCreated" name="Date" placeholder="Date" type="date">
+                        </div>
+                        <input type="hidden" name="Id" id="get-person-id"/>
+                        <div class="checkbox">
+                            <div class="col-md-6">
+                                <label for="alwaysInclude">
+                                    <input id="alwaysInclude" name="AlwaysInclude" type="checkbox" value="true">
+                                    <input id="alwaysInclude" name="AlwaysInclude" value="false" type="hidden"/>
+                                    Always Include
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default clear-inputs" data-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+
+
+<div class="modal fade deposit-more-money" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title"><span id="cash-add"></span></h4>
+            </div>
+            <form method="POST" action="/home/depositmore">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label>Add More Cash</label>
+                            <input class="form-control" id="deposit-cash" name="Amount" placeholder="$$$">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Date</label>
+                            <input class="form-control" id="date" name="Date" type="date">
+                            <input type="hidden" id="ContributorsId" name="ContributorsId"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default clear-add-money" data-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+
+@section scripts{
+    <script src="~/Scripts/site-scripts/contributor.js"></script>
+    }

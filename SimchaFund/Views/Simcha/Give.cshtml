@@ -1,0 +1,51 @@
+﻿@using SimchaFund.Data
+@model SimchaFund.Models.SimchaContribution
+
+<div>
+    <form method="post" action="/simcha/update">
+        <center><h1>give for: @Model.Simcha.SimchaName</h1></center> 
+        <input type="hidden" name="simchaId" value="@Model.Simcha.Id" />
+        <br />
+        <table class="table table-bordered">
+            <tr>
+                <th style="text-align: center; vertical-align: middle;">contribute</th>
+                <th style="text-align: center; vertical-align: middle;">name</th>
+                <th style="text-align: center; vertical-align: middle;">balance</th>
+                <th style="text-align: center; vertical-align: middle;">alwaysinclude</th>
+                <th style="text-align: center; vertical-align: middle;">amount</th>
+            </tr>
+            @{ int i = 0;}
+            @foreach (SimchaContributor c in Model.GetContributors)
+            {
+                <input type="hidden" name="contributors[@i].ContributorId" value="@c.ContributorId" />
+                <tr>
+                    <td>
+                    @if (c.Amount != null)
+                    {
+                        <input class="contribute" type="checkbox" name="contributors[@i].Include" checked value="true" />
+                            <input type="hidden" name="contributors[@i].Include" value="false" />
+                    }
+                    else
+                    {
+                        <input class="contribute" type="checkbox" name="contributors[@i].Include" value="true" />
+                            <input type="hidden" name="contributors[@i].Include" value="false" />
+                    }
+                        Check off to contribute
+                    </td>
+                    <td>@c.FirstName @c.LastName</td>
+                    <td>@c.Balance.ToString("C")</td>
+                    <td>
+                        @if (c.AlwaysInclude)
+                        {
+                            <span class="glyphicon glyphicon-ok"></span>
+                        }
+                    </td>
+                    <td><input type="text" name="contributors[@i].amount" class="form-control" value="@(c.Amount ?? 5)" /></td>
+                    @{ i++; }
+                </tr>
+            }
+        </table>
+        <br />
+        <center> <button class="btn btn-info">Update</button> </center>
+    </form>
+</div>
